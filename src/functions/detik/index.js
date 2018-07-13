@@ -1,6 +1,6 @@
 import {Pool} from 'pg'; // Postgres
 import config from '../../config';
-import DetikDataSource from '../lib/detik';
+import DetikDataSource from '../../lib/detik';
 
 // Connection object
 const cn = `postgres://${config.PGUSER}:${config.PGPASSWORD}@${config.PGHOST}:${config.PGPORT}/${config.PGDATABASE}?ssl=${config.PGSSL}`;
