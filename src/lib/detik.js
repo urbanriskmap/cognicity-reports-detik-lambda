@@ -38,11 +38,11 @@ DetikDataSource.prototype = {
      * Poll the Detik web service and process the results.
      * This method is called repeatedly on a timer.
      */
-    _poll: function() {
+    _poll: async function() {
         let self = this;
 
         // Begin processing results from page 1 of data
-        self._fetchResults();
+        await self._fetchResults();
     },
 
     /**
@@ -73,7 +73,7 @@ DetikDataSource.prototype = {
             response += chunk;
           });
 
-          res.on('end', function() {
+          res.on('end', async function() {
             console.log('response ended');
             let responseObject;
             try {
@@ -99,7 +99,7 @@ DetikDataSource.prototype = {
                     // If callback returned true, processing should continue on
                     // next page
                     page++;
-                    self._fetchResults( page );
+                    await self._fetchResults( page );
                 }
             }
           });
