@@ -94,6 +94,7 @@ DetikDataSource.prototype = {
         let response = '';
 
         let req = self.https.request( requestURL, function(res) {
+          console.log('making request');
           res.setEncoding('utf8');
 
           res.on('data', function(chunk) {
@@ -101,6 +102,7 @@ DetikDataSource.prototype = {
           });
 
           res.on('end', function() {
+            console.log('response ended');
             let responseObject;
             try {
                 responseObject = JSON.parse( response );
