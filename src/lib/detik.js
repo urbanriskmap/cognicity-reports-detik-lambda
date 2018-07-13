@@ -203,13 +203,8 @@ DetikDataSource.prototype = {
     _processResult: function( result ) {
         let self = this;
 
-        if ( self._cacheMode ) {
-            // Store result for later processing
-            self._cachedData.push( result );
-        } else {
-            // Process result now
-            self._saveResult(result);
-        }
+        // Process result now
+        self._saveResult(result);
     },
 
     /**

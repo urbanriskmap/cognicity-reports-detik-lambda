@@ -16,6 +16,14 @@ const detikDataSource = new DetikDataSource(
 
 // Test harness for CognicityReportsPowertrack object
 describe( 'DetikDataSource', function() {
+    it('Can create instance', function() {
+        const instance = new DetikDataSource(
+            config,
+            pool
+        );
+        test.value(instance).isInstanceOf(DetikDataSource);
+    });
+
     describe( 'start', function() {
         let oldPoll;
         let pollCalledTimes;
@@ -48,6 +56,94 @@ describe( 'DetikDataSource', function() {
             oldUpdateLastContributionIdFromDatabase;
         });
     });
+
+    describe('_poll()', function() {
+        let oldLastContributionId = detikDataSource._lastContributionId;
+        let oldFetchResults = detikDataSource._fetchResults;
+        let oldHighestBatchContributionId =
+            detikDataSource._highestBatchContributionId;
+
+        before(function() {
+            detikDataSource._lastContributionId = 1234;
+            detikDataSource._fetchResults = function() {
+return 0;
+};
+        });
+
+        it('Poll is executed', function() {
+            detikDataSource._poll();
+            test.value(detikDataSource._highestBatchContributionId).is(1234);
+        });
+
+        after(function() {
+            detikDataSource._lastContributionId = oldLastContributionId;
+            detikDataSource._fetchResults = oldFetchResults;
+            detikDataSource._highestBatchContributionId =
+                oldHighestBatchContributionId;
+        });
+    });
+
+    describe('processResult()', function() {
+        let oldSaveResult = detikDataSource._saveResult;
+
+        before(function() {
+            detikDataSource._saveResult = function() {
+return 0;
+};
+        });
+
+        it('processResult is executed', function() {
+            detikDataSource._saveResult({});
+        });
+
+        after(function() {
+            detikDataSource._saveResult = oldSaveResult;
+        });
+    });
+
+    describe('_saveResult()', function() {
+        let oldInsertConfirmed = detikDataSource._insertConfirmed;
+        let resultStore;
+
+        before(function() {
+            detikDataSource._insertConfirmed = function(result) {
+                resultStore = result;
+            };
+        });
+
+        const data = {
+            location: {
+                geospatial: {
+                    longitude: 1,
+                    latitude: 1,
+                },
+            },
+        };
+
+        const nullIsland = {
+            location: {
+                geospatial: {
+                    longitude: 0,
+                    latitude: 0,
+                },
+            },
+        };
+
+        it('Catches null island', function() {
+            detikDataSource._saveResult(nullIsland);
+            test.value(resultStore).is(undefined);
+        });
+
+        it('processResult is executed', function() {
+            detikDataSource._saveResult(data);
+            test.value(resultStore).is(data);
+        });
+
+        after(function() {
+            detikDataSource._saveResult = oldInsertConfirmed;
+        });
+    });
+
 
     describe( '_fetchResults', function() {
         let oldHttps;
@@ -287,9 +383,7 @@ describe( 'DetikDataSource', function() {
 
             detikDataSource.pool = {
                 query: function() {
-                    console.log('mock fired!');
                         if (returnEmpty === false) {
-                            console.log('return data');
                             return ({rows: [{contribution_id: 9999}]});
                         } else {
                             return new Error('Database Error');
