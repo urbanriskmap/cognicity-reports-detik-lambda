@@ -189,35 +189,36 @@ describe( 'DetikDataSource', function() {
             generateRequestError = false;
         });
 
-        it( 'No results returned stops processing', function() {
+        it( 'No results returned stops processing', async function() {
             httpsData = '{"result":[]}';
-            detikDataSource._fetchResults();
+            await detikDataSource._fetchResults();
             test.value( filterResultsCalled ).is( 0 );
         });
 
-        it( 'Invalid result object returned stops processing', function() {
+        it( 'Invalid result object returned stops processing',
+        async function() {
             httpsData = '{invalid-json}';
-            detikDataSource._fetchResults();
+            await detikDataSource._fetchResults();
             test.value( filterResultsCalled ).is( 0 );
         });
 
-        it( 'Valid result calls _filterResults', function() {
+        it( 'Valid result calls _filterResults', async function() {
             httpsData = '{"result":[{}]}';
-            detikDataSource._fetchResults();
+            await detikDataSource._fetchResults();
             test.value( filterResultsCalled ).is( 1 );
         });
 
-        it( 'Request error stops processing', function() {
+        it( 'Request error stops processing', async function() {
             httpsData = '{"result":[{}]}';
             generateRequestError = true;
-            detikDataSource._fetchResults();
+            await detikDataSource._fetchResults();
             test.value( filterResultsCalled ).is( 0 );
         });
 
-        it( 'Multiple pages recurses', function() {
+        it( 'Multiple pages recurses', async function() {
             httpsData = '{"result":[{}]}';
             filterResultsReturnTrueOnce = true;
-            detikDataSource._fetchResults();
+            await detikDataSource._fetchResults();
             test.value( filterResultsCalled ).is( 2 );
         });
 

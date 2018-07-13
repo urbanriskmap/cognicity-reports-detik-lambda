@@ -62,12 +62,11 @@ DetikDataSource.prototype = {
         let requestURL = self.config.DETIK_URL + '&page=' + page;
         let response = '';
 
-        let testres = await axios.get(requestURL);
+        let testres = await self.axios.get(requestURL);
         console.log('axios response', testres);
 
         let req = self.https.request( requestURL, function(res) {
           console.log('making request');
-          
           res.setEncoding('utf8');
 
           res.on('data', function(chunk) {
