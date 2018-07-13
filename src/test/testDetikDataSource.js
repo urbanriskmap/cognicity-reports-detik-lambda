@@ -19,9 +19,12 @@ describe( 'DetikDataSource', function() {
     describe( 'start', function() {
         let oldPoll;
         let pollCalledTimes;
+        let oldUpdateLastContributionIdFromDatabase;
 
         before( function() {
             oldPoll = detikDataSource._poll;
+            oldUpdateLastContributionIdFromDatabase =
+                detikDataSource._updateLastContributionIdFromDatabase;
             detikDataSource.
                 _updateLastContributionIdFromDatabase = function() {};
             detikDataSource._poll = function() {
@@ -41,6 +44,8 @@ describe( 'DetikDataSource', function() {
         // Restore/erase mocked functions
         after( function() {
             detikDataSource._poll = oldPoll;
+            detikDataSource._updateLastContributionIdFromDatabase =
+            oldUpdateLastContributionIdFromDatabase;
         });
     });
 
@@ -270,6 +275,49 @@ describe( 'DetikDataSource', function() {
         // Restore/erase mocked functions
         after( function() {
             detikDataSource.config = {};
+        });
+    });
+
+    describe('_updateLasContributionFromDatabase', function() {
+        let oldPool;
+        let returnEmpty;
+
+        before(function() {
+            oldPool = detikDataSource.pool;
+
+            detikDataSource.pool = {
+                query: function() {
+                    console.log('mock fired!');
+                        if (returnEmpty === false) {
+                            console.log('return data');
+                            return ({rows: [{contribution_id: 9999}]});
+                        } else {
+                            return new Error('Database Error');
+                        }
+                },
+            };
+        });
+
+        it( `Catches empty database results`, async function() {
+            returnEmpty = true;
+            await detikDataSource.
+                _updateLastContributionIdFromDatabase();
+            test.value(detikDataSource._lastContributionId).is(0);
+        });
+        it( `Catches valid database results`, async function() {
+            returnEmpty = false;
+            await detikDataSource._updateLastContributionIdFromDatabase();
+            test.value(detikDataSource._lastContributionId).is(9999);
+        });
+
+        after(function() {
+            detikDataSource.pool = oldPool;
+        });
+    });
+
+    describe('_insertConfirmed', function() {
+        it( `Catches bad input`, async function() {
+            detikDataSource._insertConfirmed({});
         });
     });
 });

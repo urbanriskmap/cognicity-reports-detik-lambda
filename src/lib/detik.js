@@ -287,7 +287,7 @@ DetikDataSource.prototype = {
                 await this.pool.query(userQuery, userValues);
                 console.log('Logged Detik user');
             } catch (err) {
-                console.log(err);
+                console.log('Error processing Detik data.', err.message);
             }
     },
 
