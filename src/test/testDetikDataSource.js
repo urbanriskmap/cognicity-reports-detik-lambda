@@ -66,8 +66,8 @@ describe( 'DetikDataSource', function() {
         before(function() {
             detikDataSource._lastContributionId = 1234;
             detikDataSource._fetchResults = function() {
-return 0;
-};
+            return 0;
+            };
         });
 
         it('Poll is executed', function() {
@@ -88,12 +88,12 @@ return 0;
 
         before(function() {
             detikDataSource._saveResult = function() {
-return 0;
-};
+            return 0;
+            };
         });
 
         it('processResult is executed', function() {
-            detikDataSource._saveResult({});
+            detikDataSource._processResult({});
         });
 
         after(function() {
@@ -410,8 +410,13 @@ return 0;
     });
 
     describe('_insertConfirmed', function() {
+        let detikReport = {
+            files: {},
+            url: 'https:\//web.com'
+        }
         it( `Catches bad input`, async function() {
             detikDataSource._insertConfirmed({});
         });
+
     });
 });
