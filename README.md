@@ -9,3 +9,6 @@ Lambda function to fetch Detik reports
 
 ## Tests
 `npm run test`
+
+## Deployment
+Lambda function currently deployed using Travis
