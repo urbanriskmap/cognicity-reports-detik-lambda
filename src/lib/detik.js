@@ -13,6 +13,7 @@ let DetikDataSource = function DetikDataSource(
     this.config = config;
 
     this.https = require('https');
+    this.axios = require('axios');
 
     // Set constructor reference (used to print the name of this data source)
     this.constructor = DetikDataSource;
@@ -50,7 +51,7 @@ DetikDataSource.prototype = {
      * Recurse and call self to fetch the next page of results if required
      * @param {number} page Page number of results to fetch, defaults to 1
      */
-    _fetchResults: function( page ) {
+    _fetchResults: async function( page ) {
         let self = this;
 
         if (!page) page = 1;
@@ -61,8 +62,12 @@ DetikDataSource.prototype = {
         let requestURL = self.config.DETIK_URL + '&page=' + page;
         let response = '';
 
+        let testres = await axios.get(requestURL);
+        console.log('axios response', testres);
+
         let req = self.https.request( requestURL, function(res) {
           console.log('making request');
+          
           res.setEncoding('utf8');
 
           res.on('data', function(chunk) {
