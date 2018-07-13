@@ -3,11 +3,14 @@ node_js: '8.10'
 
 script: npm run test && npm run coverage
 
+before_deploy:
+  - npm run build
+
 deploy:
   # Indonesia Prod Detik Lambda
   - provider: lambda
     function_name: "cognicity-reports-detik-dev"
-    region: $AWS_REGION_ID
+    region: ap-southeast-1
     role: $AWS_LAMBDA_ROLE
     runtime: "nodejs8.10"
     module_name: "bin/functions/detik/index"
