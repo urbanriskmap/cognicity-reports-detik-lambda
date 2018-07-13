@@ -3,6 +3,7 @@ node_js: '8.10'
 
 script: npm run test && npm run coverage
 
+deploy:
   # Indonesia Prod Detik Lambda
   - provider: lambda
     function_name: "cognicity-reports-detik-dev"
@@ -13,4 +14,3 @@ script: npm run test && npm run coverage
     handler_name: "default"
     on:
       branch: dev
-      
