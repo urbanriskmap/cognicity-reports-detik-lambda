@@ -410,13 +410,8 @@ describe( 'DetikDataSource', function() {
     });
 
     describe('_insertConfirmed', function() {
-        let detikReport = {
-            files: {},
-            url: 'https:\//web.com'
-        }
         it( `Catches bad input`, async function() {
             detikDataSource._insertConfirmed({});
         });
-
     });
 });
