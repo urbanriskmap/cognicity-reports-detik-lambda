@@ -226,7 +226,7 @@ DetikDataSource.prototype = {
      * Insert a confirmed report - i.e. has geo coordinates
      * Store both the detik report and the user hash
      * @param {detikReport} detikReport Detik report object
-     * @return {Promise} - Result of database insert
+     * @return {string} - Query parameters for debugging
      */
     _insertConfirmed: async function( detikReport ) {
             try {
@@ -276,13 +276,15 @@ DetikDataSource.prototype = {
 
                 await this.pool.query(reportQuery, reportValues);
                 console.log('Logged confirmed Detik report');
-
                 const userQuery = `SELECT detik.upsert_users(md5($1));`;
                 const userValues = [detikReport.user.creator.id];
                 await this.pool.query(userQuery, userValues);
                 console.log('Logged Detik user');
+                return (null, {query: reportQuery, values: reportValues});
             } catch (err) {
                 console.log('Error processing Detik data.', err.message);
+                return (new Error('Error processing Detik data. ' +
+                    err.message));
             }
     },
 

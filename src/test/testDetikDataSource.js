@@ -1,4 +1,5 @@
 /* eslint-disable require-jsdoc */
+/* eslint-disable no-useless-escape */
 'use strict';
 
 const test = require('unit.js');
@@ -140,7 +141,7 @@ describe( 'DetikDataSource', function() {
         });
 
         after(function() {
-            detikDataSource._saveResult = oldInsertConfirmed;
+            detikDataSource._insertConfirmed = oldInsertConfirmed;
         });
     });
 
@@ -410,8 +411,55 @@ describe( 'DetikDataSource', function() {
     });
 
     describe('_insertConfirmed', function() {
+        let oldPool;
+
+        let detikReport = {
+            files: {},
+            url: 'https:\//web.com',
+            contributionId: 1,
+            content: 'report',
+            title: 'title',
+            location: {
+                geospatial: {
+                    longitude: 1,
+                    latitude: 1,
+                },
+            },
+            date: {
+                create: {
+                    sec: 1000,
+                },
+            },
+            user: {
+                creator: {
+                    id: 123,
+                },
+            },
+        };
+
+        before(function() {
+            oldPool = detikDataSource.pool;
+            detikDataSource.pool = {
+                query: function(query, values) {
+                    return 0;
+                },
+            };
+        });
+
+        it( `Query works?`, async function() {
+            let err; let response = await detikDataSource.
+                _insertConfirmed(detikReport);
+            console.log(err, response);
+            test.value(response.values).is([1, 1000, 'report', 'id',
+                'https://web.com', null, 'title', '1 1']);
+        });
+
         it( `Catches bad input`, async function() {
             detikDataSource._insertConfirmed({});
+        });
+
+        after(function() {
+            detikDataSource.pool = oldPool;
         });
     });
 });
