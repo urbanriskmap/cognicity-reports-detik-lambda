@@ -37,11 +37,21 @@ DetikDataSource.prototype = {
      * Poll the Detik web service and process the results.
      * This method is called repeatedly on a timer.
      */
-    _poll: function() {
+    _poll: async function() {
         let self = this;
 
-        // Begin processing results from page 1 of data
-        self._fetchResults();
+        try {
+            // Begin processing results from page 1 of data
+            let page = 1;
+            let result = await self._fetchResults();
+            
+            while (result === true) {
+                page++;
+                result = await self._fetchResults();
+            }
+        } catch (err) {
+            console.log(err);
+        }
     },
 
     /**
@@ -49,65 +59,76 @@ DetikDataSource.prototype = {
      * Call the callback function on the results
      * Recurse and call self to fetch the next page of results if required
      * @param {number} page Page number of results to fetch, defaults to 1
+     * @return {promise} Result of processing
      */
     _fetchResults: function( page ) {
-        let self = this;
+        return new Promise((resolve, reject) => {
+            let self = this;
+            if (!page) page = 1;
+            console.log( 'DetikDataSource > poll > fetchResults: Loading page '+
+            page );
 
-        if (!page) page = 1;
+            let requestURL = self.config.DETIK_URL + '&page=' + page;
+            let response = '';
 
-        console.log( 'DetikDataSource > poll > fetchResults: Loading page ' +
-        page );
+            let req = self.https.request( requestURL, function(res) {
+              console.log('making request');
+              res.setEncoding('utf8');
 
-        let requestURL = self.config.DETIK_URL + '&page=' + page;
-        let response = '';
+              res.on('data', function(chunk) {
+                response += chunk;
+              });
 
-        let req = self.https.request( requestURL, function(res) {
-          console.log('making request');
-          res.setEncoding('utf8');
-
-          res.on('data', function(chunk) {
-            response += chunk;
-          });
-
-          res.on('end', function() {
-            console.log('response ended');
-            let responseObject;
-            try {
-                responseObject = JSON.parse( response );
-            } catch (e) {
-                console.log( `DetikDataSource > poll > fetchResults: 
-                    Error parsing JSON: ` + response );
-                return;
-            }
-
-            console.log('DetikDataSource > poll > fetchResults: Page ' + page +
-                ' fetched, ' + response.length + ' bytes');
-
-            if ( !responseObject || !responseObject.result ||
-                responseObject.result.length === 0 ) {
-                // If page has a problem or 0 objects, end
-                console.log( `DetikDataSource > poll > fetchResults: No results 
-                    found on page ` + page );
-                return;
-            } else {
-                // Run data processing callback on the result objects
-                if ( self._filterResults( responseObject.result ) ) {
-                    // If callback returned true, processing should continue on
-                    // next page
-                    page++;
-                    self._fetchResults( page );
+              res.on('end', function() {
+                console.log('response ended');
+                let responseObject;
+                try {
+                    responseObject = JSON.parse( response );
+                } catch (e) {
+                    console.log( `DetikDataSource > poll > fetchResults: 
+                        Error parsing JSON: ` + response );
+                    reject(new Error(`DetikDataSource > poll > fetchResults: 
+                    Error parsing JSON: ` + response));
                 }
-            }
-          });
-        });
 
-        req.on('error', function(error) {
-            console.log( `DetikDataSource > poll > fetchResults: 
-            Error fetching page ` + page + ', ' + error.message + ', ' +
-            error.stack );
-        });
+                console.log('DetikDataSource > poll > fetchResults: Page ' +
+                    page + ' fetched, ' + response.length + ' bytes');
 
-        req.end();
+                console.log(responseObject.result.length);
+                if ( !responseObject || !responseObject.result ||
+                    responseObject.result.length === 0 ) {
+                    // If page has a problem or 0 objects, end
+                    console.log( `DetikDataSource > poll > fetchResults: 
+                    No results found on page ` + page );
+                    reject(`DetikDataSource > poll > fetchResults: No results 
+                    found on page ` + page );
+                } else {
+                    try {
+                        // Run data processing callback on the result objects
+                        if ( self._filterResults(responseObject.result)) {
+                            console.log('inside');
+                            // If callback returned true, processing should
+                            // continue on next page
+                            resolve(true);
+                        } else {
+                            resolve(false);
+                        }
+                    } catch (err) {
+                        reject(err);
+                    }
+                }
+              });
+            });
+            req.on('error', function(error) {
+                console.log( `DetikDataSource > poll > fetchResults: 
+                Error fetching page ` + page + ', ' + error.message + ', ' +
+                error.stack );
+                reject(new Error(`DetikDataSource > poll > fetchResults: 
+                Error fetching page ` + page + ', ' + error.message + ', ' +
+                error.stack ));
+            });
+            req.end();
+        });
     },
 
     /**
@@ -125,8 +146,8 @@ DetikDataSource.prototype = {
                 self.config.HISTORICAL_LOAD_PERIOD ) {
                 // This result is older than our cutoff, stop processing
                 // TODO What date to use? transform to readable. timezone
-                console.log( 'DetikDataSource > poll > processResults: Result '+
-                 result.contributionId +
+                console.log( 'DetikDataSource > poll > processResults: ' +
+                `Result ` + result.contributionId +
                 ' older than maximum configured age of ' +
                 self.config.HISTORICAL_LOAD_PERIOD / 1000 + ' seconds' );
                 break;
@@ -208,14 +229,15 @@ DetikDataSource.prototype = {
         let self = this;
 
         // Called on interval to poll data source
-        let poll = function() {
+        /* let poll = function() {
             console.log( 'DetikDataSource > start: Polling ' +
             self.config.DETIK_URL );
             self._poll();
         };
 
         // Poll now, immediately
-        poll();
+        poll();*/
+        self._poll();
     },
 
 };

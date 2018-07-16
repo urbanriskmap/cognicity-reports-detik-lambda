@@ -2,7 +2,7 @@ import config from '../../config';
 import DetikDataSource from '../../lib/detik';
 
 // Endpoint for detik polling lambda
-export default async (event, context, callback) => {
+export default (event, context, callback) => {
     try {
         // Create instance
         const detikDataSource = new DetikDataSource(config);
