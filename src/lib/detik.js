@@ -42,11 +42,11 @@ DetikDataSource.prototype = {
 
         try {
             // Begin processing results from page 1 of data
-            let page = 1;
+            let page = 1; // eslint-disable-line no-unused-vars
             let result = await self._fetchResults();
-            
+
             while (result === true) {
-                page++;
+                page += 1;
                 result = await self._fetchResults();
             }
         } catch (err) {
