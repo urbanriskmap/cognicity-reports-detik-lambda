@@ -13,7 +13,6 @@ let DetikDataSource = function DetikDataSource(
     this.config = config;
 
     this.https = require('https');
-    this.axios = require('axios');
 
     // Set constructor reference (used to print the name of this data source)
     this.constructor = DetikDataSource;
