@@ -208,7 +208,7 @@ DetikDataSource.prototype = {
      * Start fetching Detik reports.
      * Setup polling and start fetching reports from the Detik feed.
      */
-    start: function() {
+    start: async function() {
         let self = this;
 
         // Called on interval to poll data source
@@ -219,7 +219,7 @@ DetikDataSource.prototype = {
         };
 
         // Poll now, immediately
-        poll();
+        await poll();
     },
 
 };
