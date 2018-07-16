@@ -38,11 +38,11 @@ DetikDataSource.prototype = {
      * Poll the Detik web service and process the results.
      * This method is called repeatedly on a timer.
      */
-    _poll: async function() {
+    _poll: function() {
         let self = this;
 
         // Begin processing results from page 1 of data
-        await self._fetchResults();
+        self._fetchResults();
     },
 
     /**
@@ -51,7 +51,7 @@ DetikDataSource.prototype = {
      * Recurse and call self to fetch the next page of results if required
      * @param {number} page Page number of results to fetch, defaults to 1
      */
-    _fetchResults: async function( page ) {
+    _fetchResults: function( page ) {
         let self = this;
 
         if (!page) page = 1;
@@ -62,9 +62,6 @@ DetikDataSource.prototype = {
         let requestURL = self.config.DETIK_URL + '&page=' + page;
         let response = '';
 
-        let testres = await self.axios.get(requestURL);
-        console.log('axios response', testres);
-
         let req = self.https.request( requestURL, function(res) {
           console.log('making request');
           res.setEncoding('utf8');
@@ -73,7 +70,7 @@ DetikDataSource.prototype = {
             response += chunk;
           });
 
-          res.on('end', async function() {
+          res.on('end', function() {
             console.log('response ended');
             let responseObject;
             try {
@@ -99,7 +96,7 @@ DetikDataSource.prototype = {
                     // If callback returned true, processing should continue on
                     // next page
                     page++;
-                    await self._fetchResults( page );
+                    self._fetchResults( page );
                 }
             }
           });
@@ -175,7 +172,7 @@ DetikDataSource.prototype = {
      * @param {detikReport} detikReport Detik report object
      * @return {string} - Query parameters for debugging
      */
-    _postConfirmed: async function( detikReport ) {
+    _postConfirmed: function( detikReport ) {
             try {
                 // Check for photo URL and fix escaping slashes
                 if (!detikReport.files.photo) {
@@ -208,18 +205,18 @@ DetikDataSource.prototype = {
      * Start fetching Detik reports.
      * Setup polling and start fetching reports from the Detik feed.
      */
-    start: async function() {
+    start: function() {
         let self = this;
 
         // Called on interval to poll data source
-        let poll = async function() {
+        let poll = function() {
             console.log( 'DetikDataSource > start: Polling ' +
             self.config.DETIK_URL );
-            await self._poll();
+            self._poll();
         };
 
         // Poll now, immediately
-        await poll();
+        poll();
     },
 
 };
