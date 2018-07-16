@@ -212,10 +212,10 @@ DetikDataSource.prototype = {
         let self = this;
 
         // Called on interval to poll data source
-        let poll = function() {
+        let poll = async function() {
             console.log( 'DetikDataSource > start: Polling ' +
             self.config.DETIK_URL );
-            self._poll();
+            await self._poll();
         };
 
         // Poll now, immediately
