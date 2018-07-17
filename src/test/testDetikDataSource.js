@@ -226,14 +226,8 @@ describe( 'DetikDataSource', function() {
         it( 'Multiple pages recurses', async () => {
             httpsData = '{"result":[{}]}';
             filterResultsReturnTrueOnce = true;
-            try {
-                await detikDataSource._fetchResults();
-                // test.value( filterResultsCalled ).is( 2 );
-                // done();
-            } catch (err) {
-                console.log('THIS IS AN ERROR', err);
-                // done();
-            }
+            await detikDataSource._poll();
+            test.value( filterResultsCalled ).is( 2 );
         });
 
         // Restore/erase mocked functions

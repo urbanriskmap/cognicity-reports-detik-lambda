@@ -38,20 +38,23 @@ DetikDataSource.prototype = {
      * This method is called repeatedly on a timer.
      */
     _poll: async function() {
-        let self = this;
+        return new Promise(async (resolve, reject) => {
+            let self = this;
+            try {
+                // Begin processing results from page 1 of data
+                let page = 1; // eslint-disable-line no-unused-vars
+                let result = await self._fetchResults();
 
-        try {
-            // Begin processing results from page 1 of data
-            let page = 1; // eslint-disable-line no-unused-vars
-            let result = await self._fetchResults();
-
-            while (result === true) {
-                page += 1;
-                result = await self._fetchResults();
+                while (result === true) {
+                    page += 1;
+                    result = await self._fetchResults();
+                }
+                resolve();
+            } catch (err) {
+                console.log(err);
+                reject(err);
             }
-        } catch (err) {
-            console.log(err);
-        }
+        });
     },
 
     /**
@@ -84,7 +87,7 @@ DetikDataSource.prototype = {
                 let responseObject;
                 try {
                     responseObject = JSON.parse( response );
-                } catch (e) {
+                } catch (err) {
                     console.log( `DetikDataSource > poll > fetchResults: 
                         Error parsing JSON: ` + response );
                     reject(new Error(`DetikDataSource > poll > fetchResults: 
@@ -225,19 +228,12 @@ DetikDataSource.prototype = {
      * Start fetching Detik reports.
      * Setup polling and start fetching reports from the Detik feed.
      */
-    start: function() {
+    start: async function() {
         let self = this;
-
-        // Called on interval to poll data source
-        /* let poll = function() {
-            console.log( 'DetikDataSource > start: Polling ' +
-            self.config.DETIK_URL );
-            self._poll();
-        };
-
+        console.log( 'DetikDataSource > start: Polling ' +
+        self.config.DETIK_URL );
         // Poll now, immediately
-        poll();*/
-        self._poll();
+        await self._poll();
     },
 
 };
