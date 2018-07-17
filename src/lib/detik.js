@@ -161,6 +161,7 @@ DetikDataSource.prototype = {
                     console.log( `DetikDataSource > poll > processResults: 
                     Processing result ` + result.contributionId );
                     try {
+                        console.log('will try and save result');
                         await self._saveResult( result );
                     } catch (err) {
                         console.log(err);
