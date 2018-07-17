@@ -10,7 +10,7 @@ let DetikDataSource = function DetikDataSource(
         config
     ) {
     // Store references to config and pool
-    this.config = config.default;
+    this.config = config;
 
     // TODO - move this to use axios;
     this.https = require('https');
