@@ -201,6 +201,7 @@ DetikDataSource.prototype = {
      * @return {string} - Query parameters for debugging
      */
     _postConfirmed: function( detikReport ) {
+        console.log('Attempting to post confirmed reports to Cognicity server');
         let self = this;
         return new Promise(async (resolve, reject) => {
             try {
@@ -227,6 +228,7 @@ DetikDataSource.prototype = {
                         detikReport);
                     resolve(detikReport);
                 } catch (err) {
+                    console.log(err);
                     reject(err);
                 }
             } catch (err) {
