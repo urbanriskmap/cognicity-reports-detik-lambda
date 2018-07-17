@@ -240,15 +240,23 @@ DetikDataSource.prototype = {
     /**
      * Start fetching Detik reports.
      * Setup polling and start fetching reports from the Detik feed.
+     * @return {Promise} - Processing result
      */
-    start: async function() {
-        let self = this;
-        console.log( 'DetikDataSource > start: Polling ' +
-        self.config.DETIK_URL );
-        // Poll now, immediately
-        await self._poll();
+    start: function() {
+        return new Promise(async (resolve, reject) => {
+            let self = this;
+            console.log( 'DetikDataSource > start: Polling ' +
+            self.config.DETIK_URL );
+            // Poll now, immediately
+            try {
+                await self._poll();
+                resolve();
+            } catch (err) {
+                console.log(err);
+                reject(err);
+            }
+        });
     },
-
 };
 
 // Export the PowertrackDataSource constructor
