@@ -186,7 +186,7 @@ DetikDataSource.prototype = {
             if (result.location.geospatial.longitude !== 0 &&
                result.location.geospatial.latitude !== 0) {
                 try {
-                    console.log('Geo OK, passing to post')
+                    console.log('Geo OK, passing to post');
                     await self._postConfirmed(result);
                     resolve();
                 } catch (err) {
