@@ -83,7 +83,7 @@ DetikDataSource.prototype = {
                 response += chunk;
               });
 
-              res.on('end', function() {
+              res.on('end', async function() {
                 let responseObject;
                 try {
                     responseObject = JSON.parse( response );
@@ -107,7 +107,8 @@ DetikDataSource.prototype = {
                 } else {
                     try {
                         // Run data processing callback on the result objects
-                        let res = self._filterResults(responseObject.result);
+                        let res =
+                            await self._filterResults(responseObject.result);
                         console.log('res', res);
                         if ( res ) {
                             // If callback returned true, processing should
