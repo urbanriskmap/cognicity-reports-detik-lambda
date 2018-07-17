@@ -239,6 +239,7 @@ describe( 'DetikDataSource', function() {
 
     describe( '_filterResults', function() {
         let processedResults = [];
+        let oldConfig;
 
         function generateResult( contributionId, date ) {
             return {
@@ -255,6 +256,7 @@ describe( 'DetikDataSource', function() {
             detikDataSource._saveResult = function(result) {
                 processedResults.push(result);
             };
+            oldConfig = detikDataSource.config;
         });
 
         beforeEach( function() {
@@ -289,11 +291,11 @@ describe( 'DetikDataSource', function() {
 
         // Restore/erase mocked functions
         after( function() {
-            detikDataSource.config = {};
+            detikDataSource.config = oldConfig;
         });
     });
 
-    describe('_insertConfirmed', function() {
+    describe('_postConfirmed', function() {
         let detikReport = {
             files: {photo: 'https://photo.com'},
             url: 'https:\//web.com',
@@ -345,6 +347,18 @@ describe( 'DetikDataSource', function() {
             },
             },
         };
+
+        let oldAxios;
+        before(function() {
+            oldAxios = detikDataSource.axios;
+            detikDataSource.axios = {
+                post: function(url, data) {
+                    return new Promise((resolve, reject) => {
+                        resolve();
+                    });
+                }
+            }
+        });
 
         it( `Processes report with photo`, async function() {
             let err; let response = await detikDataSource.

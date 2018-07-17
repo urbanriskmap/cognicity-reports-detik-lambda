@@ -10,9 +10,11 @@ let DetikDataSource = function DetikDataSource(
         config
     ) {
     // Store references to config and pool
-    this.config = config;
+    this.config = config.default;
 
+    // TODO - move this to use axios;
     this.https = require('https');
+    this.axios = require('axios');
 
     // Set constructor reference (used to print the name of this data source)
     this.constructor = DetikDataSource;
@@ -177,7 +179,6 @@ DetikDataSource.prototype = {
     _saveResult: function( result ) {
         return new Promise(async (resolve, reject) => {
             let self = this;
-
             // Detik doesn't allow users from the Gulf of Guinea
             // (indicates no geo available)
             if (result.location.geospatial.longitude !== 0 &&
@@ -199,7 +200,8 @@ DetikDataSource.prototype = {
      * @return {string} - Query parameters for debugging
      */
     _postConfirmed: function( detikReport ) {
-        return new Promise((resolve, reject) => {
+        let self = this;
+        return new Promise(async (resolve, reject) => {
             try {
                 // Check for photo URL and fix escaping slashes
                 if (!detikReport.files.photo) {
@@ -218,9 +220,9 @@ DetikDataSource.prototype = {
                 // Add disaster type
                 detikReport.disaster_type = 'flood';
 
-                // print this out as a proxy for http call.
-                // return (null, detikReport);
-                console.log(detikReport);
+                // Post data to CogniCity server
+                await self.axios.post(self.config.COGNICITY_FEED_ENDPOINT,
+                    detikReport);
                 resolve(detikReport);
             } catch (err) {
                 console.log('Error processing Detik data.', err.message);
