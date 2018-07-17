@@ -166,7 +166,7 @@ DetikDataSource.prototype = {
                     } catch (err) {
                         console.log(err);
                         reject(err);
-                    }0
+                    }
                 }
                 result = results.shift();
             }
