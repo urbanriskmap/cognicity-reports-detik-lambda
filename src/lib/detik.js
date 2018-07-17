@@ -221,9 +221,13 @@ DetikDataSource.prototype = {
                 detikReport.disaster_type = 'flood';
 
                 // Post data to CogniCity server
-                await self.axios.post(self.config.COGNICITY_FEED_ENDPOINT,
-                    detikReport);
-                resolve(detikReport);
+                try {
+                    await self.axios.post(self.config.COGNICITY_FEED_ENDPOINT,
+                        detikReport);
+                    resolve(detikReport);
+                } catch (err) {
+                    reject(err);
+                }
             } catch (err) {
                 console.log('Error processing Detik data.', err.message);
                 reject(new Error('Error processing Detik data. ' +
