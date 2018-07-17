@@ -166,7 +166,7 @@ DetikDataSource.prototype = {
                     } catch (err) {
                         console.log(err);
                         reject(err);
-                    }
+                    }0
                 }
                 result = results.shift();
             }
@@ -182,6 +182,8 @@ DetikDataSource.prototype = {
     _saveResult: function( result ) {
         return new Promise(async (resolve, reject) => {
             let self = this;
+            console.log('will now check geolocation');
+            console.log(result);
             // Detik doesn't allow users from the Gulf of Guinea
             // (indicates no geo available)
             if (result.location.geospatial.longitude !== 0 &&
