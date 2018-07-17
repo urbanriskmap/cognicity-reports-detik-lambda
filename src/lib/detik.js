@@ -75,7 +75,6 @@ DetikDataSource.prototype = {
             let response = '';
 
             let req = self.https.request( requestURL, function(res) {
-              console.log('making request');
               res.setEncoding('utf8');
 
               res.on('data', function(chunk) {
@@ -83,7 +82,6 @@ DetikDataSource.prototype = {
               });
 
               res.on('end', function() {
-                console.log('response ended');
                 let responseObject;
                 try {
                     responseObject = JSON.parse( response );
@@ -97,7 +95,6 @@ DetikDataSource.prototype = {
                 console.log('DetikDataSource > poll > fetchResults: Page ' +
                     page + ' fetched, ' + response.length + ' bytes');
 
-                console.log(responseObject.result.length);
                 if ( !responseObject || !responseObject.result ||
                     responseObject.result.length === 0 ) {
                     // If page has a problem or 0 objects, end
@@ -108,8 +105,9 @@ DetikDataSource.prototype = {
                 } else {
                     try {
                         // Run data processing callback on the result objects
-                        if ( self._filterResults(responseObject.result)) {
-                            console.log('inside');
+                        let res = self._filterResults(responseObject.result);
+                        console.log('res', res);
+                        if ( res ) {
                             // If callback returned true, processing should
                             // continue on next page
                             resolve(true);
@@ -138,55 +136,60 @@ DetikDataSource.prototype = {
      * Process the passed result objects
      * Stop processing if we've seen result before, or if the result is too old
      * @param {Array} results Array of result objects from Detik data to process
+     * @return {Promise} Result of process
      */
     _filterResults: function( results ) {
-        let self = this;
-
-        // For each result:
-        let result = results.shift();
-        while ( result ) {
-            if ( result.date.update.sec * 1000 < new Date().getTime() -
-                self.config.HISTORICAL_LOAD_PERIOD ) {
-                // This result is older than our cutoff, stop processing
-                // TODO What date to use? transform to readable. timezone
-                console.log( 'DetikDataSource > poll > processResults: ' +
-                `Result ` + result.contributionId +
-                ' older than maximum configured age of ' +
-                self.config.HISTORICAL_LOAD_PERIOD / 1000 + ' seconds' );
-                break;
-            } else {
-                // Process this result
-                console.log( `DetikDataSource > poll > processResults: 
-                Processing result ` + result.contributionId );
-                self._processResult( result );
+        return new Promise(async (resolve, reject) => {
+            let self = this;
+            // For each result:
+            let result = results.shift();
+            while ( result ) {
+                if ( result.date.update.sec * 1000 < new Date().getTime() -
+                    self.config.HISTORICAL_LOAD_PERIOD ) {
+                    // This result is older than our cutoff, stop processing
+                    // TODO What date to use? transform to readable. timezone
+                    console.log( 'DetikDataSource > poll > processResults: ' +
+                    `Result ` + result.contributionId +
+                    ' older than maximum configured age of ' +
+                    self.config.HISTORICAL_LOAD_PERIOD / 1000 + ' seconds' );
+                    resolve(false);
+                } else {
+                    // Process this result
+                    console.log( `DetikDataSource > poll > processResults: 
+                    Processing result ` + result.contributionId );
+                    try {
+                        await self._saveResult( result );
+                    } catch (err) {
+                        reject(err);
+                    }
+                }
+                result = results.shift();
             }
-            result = results.shift();
-        }
-    },
-    /**
-     * Process a result.
-     * This method is called for each new result we fetch from the web service.
-     * @param {object} result The result object from the web service
-     */
-    _processResult: function( result ) {
-        let self = this;
-        // Process result now
-        self._saveResult(result);
+            resolve(true);
+        });
     },
 
     /**
      * Save a result to cognicity server.
      * @param {object} result The result object from the web service
+     * @return {Promise} Result of process
      */
     _saveResult: function( result ) {
-         let self = this;
+        return new Promise(async (resolve, reject) => {
+            let self = this;
 
-         // Detik doesn't allow users from the Gulf of Guinea
-         // (indicates no geo available)
-         if (result.location.geospatial.longitude !== 0 &&
-            result.location.geospatial.latitude !== 0) {
-             self._postConfirmed(result);
-         }
+            // Detik doesn't allow users from the Gulf of Guinea
+            // (indicates no geo available)
+            if (result.location.geospatial.longitude !== 0 &&
+               result.location.geospatial.latitude !== 0) {
+                try {
+                    await self._postConfirmed(result);
+                    resolve();
+                } catch (err) {
+                    reject(err);
+                }
+            }
+        });
     },
 
     /**
@@ -196,6 +199,7 @@ DetikDataSource.prototype = {
      * @return {string} - Query parameters for debugging
      */
     _postConfirmed: function( detikReport ) {
+        return new Promise((resolve, reject) => {
             try {
                 // Check for photo URL and fix escaping slashes
                 if (!detikReport.files.photo) {
@@ -215,13 +219,15 @@ DetikDataSource.prototype = {
                 detikReport.disaster_type = 'flood';
 
                 // print this out as a proxy for http call.
+                // return (null, detikReport);
                 console.log(detikReport);
-                return (null, detikReport);
+                resolve(detikReport);
             } catch (err) {
                 console.log('Error processing Detik data.', err.message);
-                return (new Error('Error processing Detik data. ' +
+                reject(new Error('Error processing Detik data. ' +
                     err.message));
             }
+        });
     },
 
     /**

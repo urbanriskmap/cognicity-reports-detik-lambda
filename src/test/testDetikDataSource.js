@@ -65,7 +65,7 @@ describe( 'DetikDataSource', function() {
         });
     });
 
-    describe('processResult()', function() {
+    describe('saveResult()', function() {
         let oldSaveResult = detikDataSource._saveResult;
 
         before(function() {
@@ -74,8 +74,8 @@ describe( 'DetikDataSource', function() {
             };
         });
 
-        it('processResult is executed', function() {
-            detikDataSource._processResult({});
+        it('saveResult is executed', function() {
+            detikDataSource._saveResult({});
         });
 
         after(function() {
@@ -116,7 +116,7 @@ describe( 'DetikDataSource', function() {
             test.value(resultStore).is(undefined);
         });
 
-        it('processResult is executed', function() {
+        it('saveResult is executed', function() {
             detikDataSource._saveResult(data);
             test.value(resultStore).is(data);
         });
@@ -252,7 +252,7 @@ describe( 'DetikDataSource', function() {
         }
 
         before( function() {
-            detikDataSource._processResult = function(result) {
+            detikDataSource._saveResult = function(result) {
                 processedResults.push(result);
             };
         });
@@ -349,7 +349,7 @@ describe( 'DetikDataSource', function() {
         it( `Processes report with photo`, async function() {
             let err; let response = await detikDataSource.
                 _postConfirmed(detikReport);
-            console.log(err, response);
+            test.value(err).is(undefined);
             test.value(response).is(postProcessedReport);
         });
 
@@ -358,7 +358,7 @@ describe( 'DetikDataSource', function() {
             postProcessedReport.files.photo = null;
             let err; let response = await detikDataSource.
                 _postConfirmed(detikReport);
-            console.log(err, response);
+            test.value(err).is(undefined);
             test.value(response).is(postProcessedReport);
         });
 
