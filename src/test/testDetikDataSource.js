@@ -348,7 +348,7 @@ describe( 'DetikDataSource', function() {
             },
         };
 
-        let oldAxios;
+        let oldAxios; // eslint-disable-line no-unused-vars
         before(function() {
             oldAxios = detikDataSource.axios;
             detikDataSource.axios = {
@@ -356,8 +356,8 @@ describe( 'DetikDataSource', function() {
                     return new Promise((resolve, reject) => {
                         resolve();
                     });
-                }
-            }
+                },
+            };
         });
 
         it( `Processes report with photo`, async function() {
