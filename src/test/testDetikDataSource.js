@@ -24,11 +24,19 @@ describe( 'DetikDataSource', function() {
     describe( 'start', function() {
         let oldPoll;
         let pollCalledTimes;
+        let pollError = false;
 
         before( function() {
             oldPoll = detikDataSource._poll;
             detikDataSource._poll = function() {
-                pollCalledTimes++;
+                return new Promise((resolve, reject) => {
+                    if (pollError === false) {
+                        pollCalledTimes++;
+                        resolve();
+                    } else {
+                        reject(new Error('_poll error'));
+                    }
+                });
             };
         });
 
@@ -39,6 +47,15 @@ describe( 'DetikDataSource', function() {
         it( 'Poll called immediately at start', function() {
             detikDataSource.start();
             test.value( pollCalledTimes ).is( 1 );
+        });
+
+        it( 'Handles poll errors', function() {
+            pollError = true;
+            try {
+                detikDataSource.start();
+            } catch (err) {
+                test.value( err.message ).is( '_poll error' );
+            }
         });
 
         // Restore/erase mocked functions
@@ -86,10 +103,18 @@ describe( 'DetikDataSource', function() {
     describe('_saveResult()', function() {
         let oldPostConfirmed = detikDataSource._postConfirmed;
         let resultStore;
+        let postError = false;
 
         before(function() {
             detikDataSource._postConfirmed = function(result) {
-                resultStore = result;
+                return new Promise((resolve, reject) => {
+                    if (postError === false) {
+                        resultStore = result;
+                        resolve();
+                    } else {
+                        reject(new Error('_postConfirmed error'));
+                    }
+                });
             };
         });
 
@@ -119,6 +144,15 @@ describe( 'DetikDataSource', function() {
         it('saveResult is executed', function() {
             detikDataSource._saveResult(data);
             test.value(resultStore).is(data);
+        });
+
+        it('catches _postConfirmed error', async function() {
+            postError = true;
+            try {
+                await detikDataSource._saveResult(data);
+            } catch (err) {
+                test.value(err.message).is('_postConfirmed error');
+            }
         });
 
         after(function() {
@@ -349,12 +383,17 @@ describe( 'DetikDataSource', function() {
         };
 
         let oldAxios; // eslint-disable-line no-unused-vars
+        let axiosError = false;
         before(function() {
             oldAxios = detikDataSource.axios;
             detikDataSource.axios = {
                 post: function(url, data) {
                     return new Promise((resolve, reject) => {
-                        resolve();
+                        if (axiosError === false) {
+                            resolve();
+                        } else {
+                            reject(new Error('Axios error'));
+                        }
                     });
                 },
             };
@@ -378,6 +417,15 @@ describe( 'DetikDataSource', function() {
 
         it( `Catches bad input`, async function() {
             detikDataSource._postConfirmed({});
+        });
+
+        it( `Catches axios error`, async function() {
+            axiosError = true;
+            try {
+                await detikDataSource._postConfirmed(postProcessedReport);
+            } catch (err) {
+                test.value(err.message).is('Axios error');
+            }
         });
     });
 });

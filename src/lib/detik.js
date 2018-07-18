@@ -164,7 +164,7 @@ DetikDataSource.prototype = {
                         console.log('will try and save result');
                         await self._saveResult( result );
                     } catch (err) {
-                        console.log(err);
+                        console.log(err.message);
                         reject(err);
                     }
                 }
@@ -182,8 +182,7 @@ DetikDataSource.prototype = {
     _saveResult: function( result ) {
         return new Promise(async (resolve, reject) => {
             let self = this;
-            console.log('will now check geolocation');
-            console.log(result);
+            console.log('Will now check geolocation');
             // Detik doesn't allow users from the Gulf of Guinea
             // (indicates no geo available)
             if (result.location.geospatial.longitude !== 0 &&
@@ -195,6 +194,8 @@ DetikDataSource.prototype = {
                 } catch (err) {
                     reject(err);
                 }
+            } else {
+                console.log('Invalid geolocation data found in report');
             }
         });
     },
