@@ -164,6 +164,7 @@ describe( 'DetikDataSource', function() {
     describe( '_fetchResults', function() {
         let oldHttps;
         let oldFilterResults;
+        let filterError = false;
 
         let dataCallback;
         let endCallback;
@@ -207,13 +208,20 @@ describe( 'DetikDataSource', function() {
 
             oldFilterResults = detikDataSource._filterResults;
             detikDataSource._filterResults = function() {
-                filterResultsCalled++;
-                if (filterResultsReturnTrueOnce) {
-                    filterResultsReturnTrueOnce = false;
-                    return true;
-                } else {
-                    return false;
-                }
+                // TODO - add an error catcher here.
+                return new Promise((resolve, reject) => {
+                    if (filterError === false) {
+                        filterResultsCalled++;
+                        if (filterResultsReturnTrueOnce) {
+                            filterResultsReturnTrueOnce = false;
+                            resolve(true);
+                        } else {
+                            resolve(false);
+                        }
+                    } else {
+                        reject(new Error('_filterResults error'));
+                    }
+                });
             };
         });
 
@@ -255,6 +263,19 @@ describe( 'DetikDataSource', function() {
             } catch (err) {
                 test.value( filterResultsCalled ).is( 0 );
             }
+        });
+
+        // TODO make this work with above
+        it( 'Filter error stops processing', async function() {
+            httpsData = '{"result":[{}]}';
+            generateRequestError = false;
+            filterError = true;
+            try {
+                await detikDataSource._fetchResults();
+            } catch (err) {
+                test.value(err.message).is('_filterResults error');
+            }
+            filterError = false;
         });
 
         it( 'Multiple pages recurses', async () => {
